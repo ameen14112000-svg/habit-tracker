@@ -1,1356 +1,1922 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">
-    <meta name="theme-color" content="#123d2a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <link rel="manifest" href="./manifest.json">
-    <link rel="apple-touch-icon" href="./icon-192.png">
-    <title>Daily Habit Tracker</title>
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=yes">  
+    <meta name="theme-color" content="#123d2a">  
+    <meta name="apple-mobile-web-app-capable" content="yes">  
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">  
+    <meta name="mobile-web-app-capable" content="yes">  
+    <link rel="manifest" href="./manifest.json">  
+    <link rel="apple-touch-icon" href="./icon-192.png">  
+    <title>Daily Habit Tracker</title>  <style>  
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}  
+    html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#f3f7f4;color:#18231d}  
+    body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}  
+    .app{width:100%;max-width:1150px;margin:auto;padding:9px}  
+    .topbar{background:#123d2a;color:white;border-radius:14px;padding:11px;box-shadow:0 5px 18px rgba(18,61,42,.18)}  
+    .brand-row{display:flex;align-items:center;justify-content:space-between;gap:8px}  
+    .brand{display:flex;align-items:center;gap:8px;min-width:0}  
+    .brand-icon{width:37px;height:37px;border-radius:10px;background:#fff;color:#123d2a;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}  
+    .brand-title{margin:0;font-size:17px;font-weight:800;white-space:nowrap}  
+    .brand-subtitle{margin-top:2px;font-size:9px;opacity:.72}  
+    .top-actions{display:flex;gap:5px}  
+    .top-btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.10);color:white;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer}  
+    .top-btn.primary{background:white;color:#123d2a;border-color:white}  
+    .top-btn:active{transform:scale(.96)}  
 
-    <style>
-        *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        html,body{margin:0;padding:0;width:100%;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#f3f7f4;color:#18231d}
-        body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+    .filter-row{display:flex;align-items:stretch;gap:7px;margin-top:9px;flex-wrap:wrap}  
+    .filter-box{display:flex;align-items:center;gap:5px;background:#fff;border-radius:8px;padding:5px 8px;min-height:32px}  
+    .filter-box label{color:#6c7971;font-size:9px;font-weight:800}  
 
-        /* =========================
-           ACCESS GATE
-           ========================= */
+    select{border:0;outline:0;background:#fff;color:#123d2a;font-size:11px;font-weight:800}  
 
-        #accessGate{
-            position:fixed;
-            inset:0;
-            z-index:999999;
-            background:#123d2a;
-            color:white;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            text-align:center;
-            padding:24px;
-        }
+    .progress-box{flex:1;min-width:160px;background:#fff;border-radius:8px;padding:6px 9px;color:#123d2a}  
+    .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}  
+    .progress-title{font-size:9px;font-weight:800;letter-spacing:.3px}  
+    .progress-percent{font-size:11px;font-weight:900}  
+    .progress-track{width:100%;height:5px;background:#dfe9e2;border-radius:10px;overflow:hidden}  
+    .progress-fill{height:100%;width:0%;background:#18834d;border-radius:10px;transition:.25s}  
 
-        #accessGateBox{
-            width:100%;
-            max-width:360px;
-            background:rgba(255,255,255,.08);
-            border:1px solid rgba(255,255,255,.15);
-            border-radius:18px;
-            padding:28px 22px;
-            box-shadow:0 18px 50px rgba(0,0,0,.22);
-        }
+    .habit-section{margin-top:10px;background:#123d2a;border-radius:14px;overflow:visible;box-shadow:0 5px 18px rgba(18,61,42,.14)}  
+    .section-header{padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff}  
+    .section-title{font-size:13px;font-weight:800}  
+    .section-info{font-size:9px;opacity:.72}  
+    .table-wrap{width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;background:#fff;position:relative}  
 
-        #accessGateIcon{
-            width:58px;
-            height:58px;
-            margin:0 auto 15px;
-            border-radius:16px;
-            background:#fff;
-            color:#123d2a;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:27px;
-        }
+    table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}  
+    th:first-child,td:first-child{width:205px;min-width:205px;max-width:205px}  
+    th:not(:first-child),td:not(:first-child){width:34px;min-width:34px;max-width:34px}  
 
-        #accessTitle{
-            margin:0;
-            font-size:20px;
-            font-weight:900;
-        }
+    th{height:31px;padding:4px 2px;background:#123d2a;color:#fff;font-size:9px;font-weight:800;text-align:center;border-bottom:1px solid #0d3021;position:sticky;top:0;z-index:6}  
+    th:first-child{text-align:left;padding-left:10px;position:sticky;left:0;z-index:10;background:#123d2a;color:#fff}  
 
-        #accessMessage{
-            margin:9px 0 0;
-            font-size:11px;
-            line-height:1.6;
-            opacity:.78;
-        }
+    td{height:39px;padding:4px 2px;text-align:center;background:#fff;border-bottom:1px solid #e8eee9;border-right:1px solid #f0f3f1}  
+    td:first-child{position:sticky;left:0;z-index:5;background:#fff;text-align:left;padding-left:10px;border-right:1px solid #d6e2da}  
 
-        #accessRetry{
-            display:none;
-            margin-top:18px;
-            border:0;
-            background:#fff;
-            color:#123d2a;
-            border-radius:9px;
-            padding:10px 18px;
-            font-size:11px;
-            font-weight:800;
-            cursor:pointer;
-        }
+    .habit-name-wrap{display:flex;align-items:center;gap:7px;min-width:0}  
+    .habit-number{width:22px;height:22px;border-radius:6px;background:#eaf3ed;color:#123d2a;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0}  
+    .habit-name{flex:1;min-width:0;font-size:10px;font-weight:700;color:#25352c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}  
 
-        .app{width:100%;max-width:1150px;margin:auto;padding:9px;display:none}
-        .topbar{background:#123d2a;color:white;border-radius:14px;padding:11px;box-shadow:0 5px 18px rgba(18,61,42,.18)}
-        .brand-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
-        .brand{display:flex;align-items:center;gap:8px;min-width:0}
-        .brand-icon{width:37px;height:37px;border-radius:10px;background:#fff;color:#123d2a;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
-        .brand-title{margin:0;font-size:17px;font-weight:800;white-space:nowrap}
-        .brand-subtitle{margin-top:2px;font-size:9px;opacity:.72}
-        .top-actions{display:flex;gap:5px}
-        .top-btn{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.10);color:white;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:700;cursor:pointer}
-        .top-btn.primary{background:white;color:#123d2a;border-color:white}
-        .top-btn:active{transform:scale(.96)}
+    .more-wrap{position:relative;flex-shrink:0}  
+    .more-btn{width:25px;height:25px;border:1px solid #d5e1d9;background:#fff;color:#123d2a;border-radius:7px;font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}  
+    .more-btn:active{background:#edf4ef}  
 
-        .filter-row{display:flex;align-items:stretch;gap:7px;margin-top:9px;flex-wrap:wrap}
-        .filter-box{display:flex;align-items:center;gap:5px;background:#fff;border-radius:8px;padding:5px 8px;min-height:32px}
-        .filter-box label{color:#6c7971;font-size:9px;font-weight:800}
+    #habitMenu{display:none;position:fixed;width:135px;background:#fff;border:1px solid #d4dfd8;border-radius:9px;padding:4px;box-shadow:0 10px 30px rgba(0,0,0,.20);z-index:99999}  
+    #habitMenu.show{display:block}  
+    #habitMenu button{width:100%;border:0;background:#fff;text-align:left;padding:8px;border-radius:6px;font-size:10px;font-weight:700;color:#25352c;cursor:pointer}  
+    #habitMenu button:active{background:#edf4ef}  
+    #habitMenu button.delete-item{color:#b42318}  
 
-        select{border:0;outline:0;background:#fff;color:#123d2a;font-size:11px;font-weight:800}
+    .day-btn{width:25px;height:25px;border-radius:6px;border:1px solid #d5dfd8;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:auto;font-size:12px;font-weight:900}  
+    .day-btn.done{background:#123d2a;border-color:#123d2a;color:#fff}  
+    .day-btn:active{transform:scale(.91)}  
+    .habit-progress{font-size:9px;font-weight:900;color:#123d2a}  
+    .empty{padding:35px 15px;text-align:center;color:#748078;font-size:12px}  
 
-        .progress-box{flex:1;min-width:160px;background:#fff;border-radius:8px;padding:6px 9px;color:#123d2a}
-        .progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
-        .progress-title{font-size:9px;font-weight:800;letter-spacing:.3px}
-        .progress-percent{font-size:11px;font-weight:900}
-        .progress-track{width:100%;height:5px;background:#dfe9e2;border-radius:10px;overflow:hidden}
-        .progress-fill{height:100%;width:0%;background:#18834d;border-radius:10px;transition:.25s}
+    .data-bar{margin-top:8px;width:100%;min-height:52px;background:#123d2a;color:#fff;border-radius:14px;box-shadow:0 5px 18px rgba(18,61,42,.14);display:grid;grid-template-columns:repeat(3,1fr);align-items:center;overflow:hidden}  
+    .data-item{min-width:0;text-align:center;padding:7px 4px;border-right:1px solid rgba(255,255,255,.16)}  
+    .data-item:last-child{border-right:0}  
+    .data-value{display:block;font-size:14px;font-weight:900;line-height:1.1}  
+    .data-label{display:block;margin-top:3px;font-size:7px;font-weight:800;letter-spacing:.35px;opacity:.72;white-space:nowrap}  
 
-        .habit-section{margin-top:10px;background:#123d2a;border-radius:14px;overflow:visible;box-shadow:0 5px 18px rgba(18,61,42,.14)}
-        .section-header{padding:9px 11px;display:flex;align-items:center;justify-content:space-between;gap:8px;color:#fff}
-        .section-title{font-size:13px;font-weight:800}
-        .section-info{font-size:9px;opacity:.72}
-        .table-wrap{width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;background:#fff;position:relative}
+    .daily-summary{margin-top:8px;background:#fff;border:1px solid #dce7df;border-radius:14px;padding:11px;box-shadow:0 5px 18px rgba(18,61,42,.10);position:relative;overflow:hidden}  
+    .daily-summary::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:#123d2a}  
+    .summary-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}  
+    .summary-title-wrap{display:flex;align-items:center;gap:7px;min-width:0}  
+    .summary-icon{width:30px;height:30px;border-radius:8px;background:#eaf3ed;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}  
+    .summary-title{font-size:12px;font-weight:900;color:#123d2a}  
+    .summary-subtitle{margin-top:2px;font-size:8px;color:#7a867f}  
+    .summary-month{font-size:8px;font-weight:800;color:#557064;background:#f0f5f1;border-radius:7px;padding:5px 7px;white-space:nowrap}  
 
-        table{width:max-content;min-width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
-        th:first-child,td:first-child{width:205px;min-width:205px;max-width:205px}
-        th:not(:first-child),td:not(:first-child){width:34px;min-width:34px;max-width:34px}
+    .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}  
+    .summary-card{background:#f6f9f7;border:1px solid #e3ebe5;border-radius:9px;padding:8px;min-width:0}  
+    .summary-card-label{display:flex;align-items:center;gap:4px;font-size:7px;font-weight:800;color:#718078;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}  
+    .summary-card-value{display:block;margin-top:4px;font-size:14px;font-weight:900;color:#123d2a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}  
 
-        th{height:31px;padding:4px 2px;background:#123d2a;color:#fff;font-size:9px;font-weight:800;text-align:center;border-bottom:1px solid #0d3021;position:sticky;top:0;z-index:6}
-        th:first-child{text-align:left;padding-left:10px;position:sticky;left:0;z-index:10;background:#123d2a;color:#fff}
+    .summary-bottom{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}  
+    .best-habit{background:#123d2a;color:#fff;border-radius:9px;padding:9px;min-width:0}  
+    .best-habit-label{font-size:7px;font-weight:800;opacity:.68;letter-spacing:.3px}  
+    .best-habit-name{margin-top:4px;font-size:10px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}  
+    .best-habit-progress{margin-top:3px;font-size:8px;opacity:.78}  
 
-        td{height:39px;padding:4px 2px;text-align:center;background:#fff;border-bottom:1px solid #e8eee9;border-right:1px solid #f0f3f1}
-        td:first-child{position:sticky;left:0;z-index:5;background:#fff;text-align:left;padding-left:10px;border-right:1px solid #d6e2da}
+    .motivation{background:#f1f6f3;border:1px solid #dfe9e2;border-radius:9px;padding:9px;min-width:0}  
+    .motivation-label{font-size:7px;font-weight:800;color:#718078;letter-spacing:.3px}  
+    .motivation-text{margin-top:4px;font-size:9px;line-height:1.35;font-weight:800;color:#294036}  
 
-        .habit-name-wrap{display:flex;align-items:center;gap:7px;min-width:0}
-        .habit-number{width:22px;height:22px;border-radius:6px;background:#eaf3ed;color:#123d2a;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;flex-shrink:0}
-        .habit-name{flex:1;min-width:0;font-size:10px;font-weight:700;color:#25352c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .summary-progress{margin-top:7px;width:100%;height:4px;background:#e1eae4;border-radius:10px;overflow:hidden}  
+    .summary-progress-fill{width:0%;height:100%;background:#18834d;border-radius:10px;transition:.3s}  
 
-        .more-wrap{position:relative;flex-shrink:0}
-        .more-btn{width:25px;height:25px;border:1px solid #d5e1d9;background:#fff;color:#123d2a;border-radius:7px;font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
-        .more-btn:active{background:#edf4ef}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(7,28,17,.48);z-index:2000;align-items:center;justify-content:center;padding:20px}  
+    .modal-bg.show{display:flex}  
+    .modal{width:100%;max-width:360px;background:#fff;border-radius:15px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.25)}  
+    .modal h3{margin:0 0 5px;color:#123d2a;font-size:16px}  
+    .modal p{margin:0 0 13px;font-size:11px;color:#718078;line-height:1.5}  
+    .modal input{width:100%;border:1px solid #cfdcd4;border-radius:8px;padding:10px;outline:none;font-size:13px;color:#18231d}  
+    .modal input:focus{border-color:#18834d}  
+    .modal-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:13px}  
+    .modal-btn{border:1px solid #d2ddd6;background:#fff;color:#405047;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer}  
+    .modal-btn.primary{background:#123d2a;border-color:#123d2a;color:#fff}  
+    .modal-btn.danger{background:#b42318;border-color:#b42318;color:#fff}  
 
-        #habitMenu{display:none;position:fixed;width:135px;background:#fff;border:1px solid #d4dfd8;border-radius:9px;padding:4px;box-shadow:0 10px 30px rgba(0,0,0,.20);z-index:99999}
-        #habitMenu.show{display:block}
-        #habitMenu button{width:100%;border:0;background:#fff;text-align:left;padding:8px;border-radius:6px;font-size:10px;font-weight:700;color:#25352c;cursor:pointer}
-        #habitMenu button:active{background:#edf4ef}
-        #habitMenu button.delete-item{color:#b42318}
+    @media(max-width:600px){  
+    .app{padding:7px}  
+    .topbar{border-radius:11px;padding:8px}  
+    .brand-icon{width:32px;height:32px;font-size:17px}  
+    .brand-title{font-size:14px}  
+    .brand-subtitle{font-size:8px}  
+    .top-actions{gap:3px}  
+    .top-btn{padding:6px 7px;font-size:9px}  
+    .filter-row{gap:5px;margin-top:7px}  
+    .filter-box{padding:4px 6px}  
+    .progress-box{min-width:130px}  
+    .habit-section{border-radius:11px;margin-top:7px}  
+    .section-header{padding:7px 9px}  
+    .section-title{font-size:12px}  
+    th:first-child,td:first-child{width:190px;min-width:190px;max-width:190px}  
+    th:not(:first-child),td:not(:first-child){width:34px;min-width:34px;max-width:34px}  
+    td{height:37px}  
+    .habit-name{font-size:9px}  
+    .habit-number{width:20px;height:20px}  
+    .day-btn{width:24px;height:24px}  
+    .data-bar{margin-top:7px;min-height:48px;border-radius:11px}  
+    .data-value{font-size:12px}  
+    .data-label{font-size:6px}  
+    .daily-summary{margin-top:7px;padding:9px;border-radius:11px}  
+    .summary-grid{gap:5px}  
+    .summary-card{padding:7px;border-radius:8px}  
+    .summary-card-label{font-size:6px}  
+    .summary-card-value{font-size:12px}  
+    .summary-bottom{gap:5px;margin-top:5px}  
+    .best-habit,.motivation{padding:8px;border-radius:8px}  
+    .best-habit-name{font-size:9px}  
+    .motivation-text{font-size:8px}  
+    }  
 
-        .day-btn{width:25px;height:25px;border-radius:6px;border:1px solid #d5dfd8;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;margin:auto;font-size:12px;font-weight:900}
-        .day-btn.done{background:#123d2a;border-color:#123d2a;color:#fff}
-        .day-btn:active{transform:scale(.91)}
-        .habit-progress{font-size:9px;font-weight:900;color:#123d2a}
-        .empty{padding:35px 15px;text-align:center;color:#748078;font-size:12px}
+    @media(max-width:380px){  
+    .brand-subtitle{display:none}  
+    .brand-title{font-size:13px}  
+    .top-btn{padding:5px 6px;font-size:8px}  
+    th:first-child,td:first-child{width:175px;min-width:175px;max-width:175px}  
+    .summary-month{display:none}  
+    .summary-title{font-size:11px}  
+    }  
+</style>
 
-        .data-bar{margin-top:8px;width:100%;min-height:52px;background:#123d2a;color:#fff;border-radius:14px;box-shadow:0 5px 18px rgba(18,61,42,.14);display:grid;grid-template-columns:repeat(3,1fr);align-items:center;overflow:hidden}
-        .data-item{min-width:0;text-align:center;padding:7px 4px;border-right:1px solid rgba(255,255,255,.16)}
-        .data-item:last-child{border-right:0}
-        .data-value{display:block;font-size:14px;font-weight:900;line-height:1.1}
-        .data-label{display:block;margin-top:3px;font-size:7px;font-weight:800;letter-spacing:.35px;opacity:.72;white-space:nowrap}
+</head>  <body>  <div class="app">  <div class="topbar">  
 
-        .daily-summary{margin-top:8px;background:#fff;border:1px solid #dce7df;border-radius:14px;padding:11px;box-shadow:0 5px 18px rgba(18,61,42,.10);position:relative;overflow:hidden}
-        .daily-summary::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:#123d2a}
-        .summary-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
-        .summary-title-wrap{display:flex;align-items:center;gap:7px;min-width:0}
-        .summary-icon{width:30px;height:30px;border-radius:8px;background:#eaf3ed;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-        .summary-title{font-size:12px;font-weight:900;color:#123d2a}
-        .summary-subtitle{margin-top:2px;font-size:8px;color:#7a867f}
-        .summary-month{font-size:8px;font-weight:800;color:#557064;background:#f0f5f1;border-radius:7px;padding:5px 7px;white-space:nowrap}
+    <div class="brand-row">  
 
-        .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-        .summary-card{background:#f6f9f7;border:1px solid #e3ebe5;border-radius:9px;padding:8px;min-width:0}
-        .summary-card-label{display:flex;align-items:center;gap:4px;font-size:7px;font-weight:800;color:#718078;text-transform:uppercase;letter-spacing:.2px;white-space:nowrap}
-        .summary-card-value{display:block;margin-top:4px;font-size:14px;font-weight:900;color:#123d2a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        <div class="brand">  
+            <div class="brand-icon">🌿</div>  
+            <div class="brand-text">  
+                <div class="brand-title">Daily Habit Tracker</div>  
+                <div class="brand-subtitle">Build consistency. Track progress.</div>  
+            </div>  
+        </div>  
 
-        .summary-bottom{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
-        .best-habit{background:#123d2a;color:#fff;border-radius:9px;padding:9px;min-width:0}
-        .best-habit-label{font-size:7px;font-weight:800;opacity:.68;letter-spacing:.3px}
-        .best-habit-name{margin-top:4px;font-size:10px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .best-habit-progress{margin-top:3px;font-size:8px;opacity:.78}
+        <div class="top-actions">  
+            <button class="top-btn primary" onclick="openAddHabit()">＋ Add</button>  
+            <button class="top-btn" onclick="askResetMonth()">↻ Reset</button>  
+            <button class="top-btn" onclick="askResetAll()">Reset All</button>  
+        </div>  
 
-        .motivation{background:#f1f6f3;border:1px solid #dfe9e2;border-radius:9px;padding:9px;min-width:0}
-        .motivation-label{font-size:7px;font-weight:800;color:#718078;letter-spacing:.3px}
-        .motivation-text{margin-top:4px;font-size:9px;line-height:1.35;font-weight:800;color:#294036}
+    </div>  
 
-        .summary-progress{margin-top:7px;width:100%;height:4px;background:#e1eae4;border-radius:10px;overflow:hidden}
-        .summary-progress-fill{width:0%;height:100%;background:#18834d;border-radius:10px;transition:.3s}
+    <div class="filter-row">  
 
-        .modal-bg{display:none;position:fixed;inset:0;background:rgba(7,28,17,.48);z-index:2000;align-items:center;justify-content:center;padding:20px}
-        .modal-bg.show{display:flex}
-        .modal{width:100%;max-width:360px;background:#fff;border-radius:15px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.25)}
-        .modal h3{margin:0 0 5px;color:#123d2a;font-size:16px}
-        .modal p{margin:0 0 13px;font-size:11px;color:#718078;line-height:1.5}
-        .modal input{width:100%;border:1px solid #cfdcd4;border-radius:8px;padding:10px;outline:none;font-size:13px;color:#18231d}
-        .modal input:focus{border-color:#18834d}
-        .modal-actions{display:flex;justify-content:flex-end;gap:7px;margin-top:13px}
-        .modal-btn{border:1px solid #d2ddd6;background:#fff;color:#405047;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:700;cursor:pointer}
-        .modal-btn.primary{background:#123d2a;border-color:#123d2a;color:#fff}
-        .modal-btn.danger{background:#b42318;border-color:#b42318;color:#fff}
+        <div class="filter-box">  
+            <label>Year</label>  
+            <select id="yearSelect" onchange="changeYear()"></select>  
+        </div>  
 
-        @media(max-width:600px){
-        .app{padding:7px}
-        .topbar{border-radius:11px;padding:8px}
-        .brand-icon{width:32px;height:32px;font-size:17px}
-        .brand-title{font-size:14px}
-        .brand-subtitle{font-size:8px}
-        .top-actions{gap:3px}
-        .top-btn{padding:6px 7px;font-size:9px}
-        .filter-row{gap:5px;margin-top:7px}
-        .filter-box{padding:4px 6px}
-        .progress-box{min-width:130px}
-        .habit-section{border-radius:11px;margin-top:7px}
-        .section-header{padding:7px 9px}
-        .section-title{font-size:12px}
-        th:first-child,td:first-child{width:190px;min-width:190px;max-width:190px}
-        th:not(:first-child),td:not(:first-child){width:34px;min-width:34px;max-width:34px}
-        td{height:37px}
-        .habit-name{font-size:9px}
-        .habit-number{width:20px;height:20px}
-        .day-btn{width:24px;height:24px}
-        .data-bar{margin-top:7px;min-height:48px;border-radius:11px}
-        .data-value{font-size:12px}
-        .data-label{font-size:6px}
-        .daily-summary{margin-top:7px;padding:9px;border-radius:11px}
-        .summary-grid{gap:5px}
-        .summary-card{padding:7px;border-radius:8px}
-        .summary-card-label{font-size:6px}
-        .summary-card-value{font-size:12px}
-        .summary-bottom{gap:5px;margin-top:5px}
-        .best-habit,.motivation{padding:8px;border-radius:8px}
-        .best-habit-name{font-size:9px}
-        .motivation-text{font-size:8px}
-        }
+        <div class="filter-box">  
+            <label>Month</label>  
+            <select id="monthSelect" onchange="changeMonth()">  
+                <option value="0">January</option>  
+                <option value="1">February</option>  
+                <option value="2">March</option>  
+                <option value="3">April</option>  
+                <option value="4">May</option>  
+                <option value="5">June</option>  
+                <option value="6">July</option>  
+                <option value="7">August</option>  
+                <option value="8">September</option>  
+                <option value="9">October</option>  
+                <option value="10">November</option>  
+                <option value="11">December</option>  
+            </select>  
+        </div>  
 
-        @media(max-width:380px){
-        .brand-subtitle{display:none}
-        .brand-title{font-size:13px}
-        .top-btn{padding:5px 6px;font-size:8px}
-        th:first-child,td:first-child{width:175px;min-width:175px;max-width:175px}
-        .summary-month{display:none}
-        .summary-title{font-size:11px}
-        }
-    </style>
-</head>
+        <div class="progress-box">  
+            <div class="progress-top">  
+                <span class="progress-title">MONTHLY PROGRESS</span>  
+                <span class="progress-percent" id="totalPercent">0%</span>  
+            </div>  
+            <div class="progress-track">  
+                <div class="progress-fill" id="totalFill"></div>  
+            </div>  
+        </div>  
 
-<body>
+    </div>  
+</div>  
 
-<!-- =========================
-     ACCESS VERIFICATION SCREEN
-     ========================= -->
+<div class="habit-section">  
 
-<div id="accessGate">
+    <div class="section-header">  
+        <div class="section-title">My Habits</div>  
+        <div class="section-info" id="monthInfo">0 days</div>  
+    </div>  
 
-    <div id="accessGateBox">
+    <div class="table-wrap" id="tableWrap">  
 
-        <div id="accessGateIcon">🔐</div>
+        <table>  
+            <thead>  
+            <tr id="tableHead">  
+                <th>HABIT</th>  
+            </tr>  
+            </thead>  
 
-        <h2 id="accessTitle">Checking access...</h2>
+            <tbody id="habitBody"></tbody>  
+        </table>  
 
-        <p id="accessMessage">
-            Please wait while we verify your access.
-        </p>
+    </div>  
+</div>  
 
-        <button id="accessRetry" type="button" onclick="verifyAccess()">
-            Try Again
-        </button>
+<div class="data-bar">  
 
-    </div>
+    <div class="data-item">  
+        <span class="data-value" id="statHabits">10</span>  
+        <span class="data-label">HABITS</span>  
+    </div>  
+
+    <div class="data-item">  
+        <span class="data-value" id="statDone">0</span>  
+        <span class="data-label">DONE MARKS</span>  
+    </div>  
+
+    <div class="data-item">  
+        <span class="data-value" id="statActive">0</span>  
+        <span class="data-label">ACTIVE DAYS</span>  
+    </div>  
+
+</div>  
+
+<div class="daily-summary">  
+
+    <div class="summary-header">  
+
+        <div class="summary-title-wrap">  
+            <div class="summary-icon">📊</div>  
+
+            <div>  
+                <div class="summary-title">Daily Summary</div>  
+                <div class="summary-subtitle">Your consistency at a glance</div>  
+            </div>  
+
+        </div>  
+
+        <div class="summary-month" id="summaryMonth">September 2026</div>  
+
+    </div>  
+
+    <div class="summary-grid">  
+
+        <div class="summary-card">  
+            <div class="summary-card-label">🎯 Progress</div>  
+            <span class="summary-card-value" id="summaryPercent">0%</span>  
+        </div>  
+
+        <div class="summary-card">  
+            <div class="summary-card-label">✓ Completed</div>  
+            <span class="summary-card-value" id="summaryDone">0</span>  
+        </div>  
+
+        <div class="summary-card">  
+            <div class="summary-card-label">📅 Active Days</div>  
+            <span class="summary-card-value" id="summaryActive">0</span>  
+        </div>  
+
+    </div>  
+
+    <div class="summary-bottom">  
+
+        <div class="best-habit">  
+            <div class="best-habit-label">🏆 BEST HABIT</div>  
+            <div class="best-habit-name" id="bestHabitName">No data yet</div>  
+            <div class="best-habit-progress" id="bestHabitProgress">Start tracking today</div>  
+        </div>  
+
+        <div class="motivation">  
+            <div class="motivation-label">💬 DAILY MOTIVATION</div>  
+            <div class="motivation-text" id="motivationText">Start small. Stay consistent.</div>  
+        </div>  
+
+    </div>  
+
+    <div class="summary-progress">  
+        <div class="summary-progress-fill" id="summaryProgressFill"></div>  
+    </div>  
 
 </div>
 
+</div>  <div id="habitMenu" class="menu">  
+    <button type="button" data-action="up">↑ Move Up</button>  
+    <button type="button" data-action="down">↓ Move Down</button>  
+    <button type="button" data-action="edit">✎ Edit</button>  
+    <button type="button" class="delete-item" data-action="delete">🗑️ Delete</button>  
+</div>  <div class="modal-bg" id="habitModal">  <div class="modal">  
 
-<div class="app">
+    <h3 id="modalTitle">Add Habit</h3>  
 
-    <div class="topbar">
+    <p id="modalDescription">Enter your new habit name.</p>  
 
-        <div class="brand-row">
+    <input id="habitInput" type="text" maxlength="60" placeholder="Example: Read 10 pages">  
 
-            <div class="brand">
-                <div class="brand-icon">🌿</div>
+    <div class="modal-actions">  
 
-                <div class="brand-text">
-                    <div class="brand-title">Daily Habit Tracker</div>
-                    <div class="brand-subtitle">Build consistency. Track progress.</div>
-                </div>
-            </div>
+        <button class="modal-btn" onclick="closeModal()">Cancel</button>  
 
-            <div class="top-actions">
+        <button class="modal-btn primary" onclick="saveHabit()">Save</button>  
 
-                <button class="top-btn primary" onclick="openAddHabit()">＋ Add</button>
-
-                <button class="top-btn" onclick="askResetMonth()">↻ Reset</button>
-
-                <button class="top-btn" onclick="askResetAll()">Reset All</button>
-
-            </div>
-
-        </div>
-
-
-        <div class="filter-row">
-
-            <div class="filter-box">
-
-                <label>Year</label>
-
-                <select id="yearSelect" onchange="changeYear()"></select>
-
-            </div>
-
-
-            <div class="filter-box">
-
-                <label>Month</label>
-
-                <select id="monthSelect" onchange="changeMonth">
-
-                    <option value="0">January</option>
-                    <option value="1">February</option>
-                    <option value="2">March</option>
-                    <option value="3">April</option>
-                    <option value="4">May</option>
-                    <option value="5">June</option>
-                    <option value="6">July</option>
-                    <option value="7">August</option>
-                    <option value="8">September</option>
-                    <option value="9">October</option>
-                    <option value="10">November</option>
-                    <option value="11">December</option>
-
-                </select>
-
-            </div>
-
-
-            <div class="progress-box">
-
-                <div class="progress-top">
-
-                    <span class="progress-title">MONTHLY PROGRESS</span>
-
-                    <span class="progress-percent" id="totalPercent">0%</span>
-
-                </div>
-
-                <div class="progress-track">
-
-                    <div class="progress-fill" id="totalFill"></div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="habit-section">
-
-        <div class="section-header">
-
-            <div class="section-title">My Habits</div>
-
-            <div class="section-info" id="monthInfo">0 days</div>
-
-        </div>
-
-
-        <div class="table-wrap" id="tableWrap">
-
-            <table>
-
-                <thead>
-
-                <tr id="tableHead">
-
-                    <th>HABIT</th>
-
-                </tr>
-
-                </thead>
-
-
-                <tbody id="habitBody"></tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-
-    <div class="data-bar">
-
-        <div class="data-item">
-
-            <span class="data-value" id="statHabits">10</span>
-
-            <span class="data-label">HABITS</span>
-
-        </div>
-
-
-        <div class="data-item">
-
-            <span class="data-value" id="statDone">0</span>
-
-            <span class="data-label">DONE MARKS</span>
-
-        </div>
-
-
-        <div class="data-item">
-
-            <span class="data-value" id="statActive">0</span>
-
-            <span class="data-label">ACTIVE DAYS</span>
-
-        </div>
-
-    </div>
-
-
-    <div class="daily-summary">
-
-        <div class="summary-header">
-
-            <div class="summary-title-wrap">
-
-                <div class="summary-icon">📊</div>
-
-                <div>
-
-                    <div class="summary-title">Daily Summary</div>
-
-                    <div class="summary-subtitle">Your consistency at a glance</div>
-
-                </div>
-
-            </div>
-
-
-            <div class="summary-month" id="summaryMonth">
-                September 2026
-            </div>
-
-        </div>
-
-
-        <div class="summary-grid">
-
-            <div class="summary-card">
-
-                <div class="summary-card-label">🎯 Progress</div>
-
-                <span class="summary-card-value" id="summaryPercent">0%</span>
-
-            </div>
-
-
-            <div class="summary-card">
-
-                <div class="summary-card-label">✓ Completed</div>
-
-                <span class="summary-card-value" id="summaryDone">0</span>
-
-            </div>
-
-
-            <div class="summary-card">
-
-                <div class="summary-card-label">📅 Active Days</div>
-
-                <span class="summary-card-value" id="summaryActive">0</span>
-
-            </div>
-
-        </div>
-
-
-        <div class="summary-bottom">
-
-            <div class="best-habit">
-
-                <div class="best-habit-label">🏆 BEST HABIT</div>
-
-                <div class="best-habit-name" id="bestHabitName">
-                    No data yet
-                </div>
-
-                <div class="best-habit-progress" id="bestHabitProgress">
-                    Start tracking today
-                </div>
-
-            </div>
-
-
-            <div class="motivation">
-
-                <div class="motivation-label">💬 DAILY MOTIVATION</div>
-
-                <div class="motivation-text" id="motivationText">
-                    Start small. Stay consistent.
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="summary-progress">
-
-            <div
-                class="summary-progress-fill"
-                id="summaryProgressFill">
-            </div>
-
-        </div>
-
-    </div>
+    </div>  
 
 </div>
 
+</div>  <div class="modal-bg" id="confirmModal">  <div class="modal">  
 
-<div id="habitMenu" class="menu">
+    <h3 id="confirmTitle">Confirm</h3>  
 
-    <button type="button" data-action="up">↑ Move Up</button>
+    <p id="confirmMessage">Are you sure?</p>  
 
-    <button type="button" data-action="down">↓ Move Down</button>
+    <div class="modal-actions">  
 
-    <button type="button" data-action="edit">✎ Edit</button>
+        <button class="modal-btn" onclick="closeConfirm()">Cancel</button>  
 
-    <button type="button" class="delete-item" data-action="delete">
-        🗑️ Delete
-    </button>
+        <button class="modal-btn danger" id="confirmButton" onclick="confirmAction()">Confirm</button>  
 
-</div>
-
-
-<div class="modal-bg" id="habitModal">
-
-    <div class="modal">
-
-        <h3 id="modalTitle">Add Habit</h3>
-
-        <p id="modalDescription">
-            Enter your new habit name.
-        </p>
-
-        <input
-            id="habitInput"
-            type="text"
-            maxlength="60"
-            placeholder="Example: Read 10 pages"
-        >
-
-        <div class="modal-actions">
-
-            <button
-                class="modal-btn"
-                onclick="closeModal()">
-                Cancel
-            </button>
-
-            <button
-                class="modal-btn primary"
-                onclick="saveHabit()">
-                Save
-            </button>
-
-        </div>
-
-    </div>
+    </div>  
 
 </div>
 
-
-<div class="modal-bg" id="confirmModal">
-
-    <div class="modal">
-
-        <h3 id="confirmTitle">Confirm</h3>
-
-        <p id="confirmMessage">
-            Are you sure?
-        </p>
-
-        <div class="modal-actions">
-
-            <button
-                class="modal-btn"
-                onclick="closeConfirm()">
-                Cancel
-            </button>
-
-            <button
-                class="modal-btn danger"
-                id="confirmButton"
-                onclick="confirmAction()">
-                Confirm
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-<script>
-
-    /* =========================================================
-       ACCESS CONTROL
-       ========================================================= */
-
-    const ACCESS_API =
-        "https://habit-tracker-access.ameenameen1135514.workers.dev";
-
-    const ACCESS_TOKEN_KEY =
-        "daily_habit_tracker_access_token_v1";
-
-
-    function setAccessScreen(title,message,showRetry){
-
-        const titleElement =
-            document.getElementById("accessTitle");
-
-        const messageElement =
-            document.getElementById("accessMessage");
-
-        const retryButton =
-            document.getElementById("accessRetry");
-
-        titleElement.textContent = title;
-
-        messageElement.textContent = message;
-
-        retryButton.style.display =
-            showRetry ? "inline-block" : "none";
-
-    }
-
-
-    async function verifyAccess(){
-
-        const gate =
-            document.getElementById("accessGate");
-
-        const app =
-            document.querySelector(".app");
-
-        app.style.display = "none";
-
-        gate.style.display = "flex";
-
-        setAccessScreen(
-            "Checking access...",
-            "Please wait while we verify your access.",
-            false
-        );
-
-
-        try{
-
-            const urlParams =
-                new URLSearchParams(
-                    window.location.search
-                );
-
-            /*
-             * First check the URL.
-             * Example:
-             * ?access=xxxxxxxx-xxxx-xxxx
-             */
-
-            let token =
-                urlParams.get("access");
-
-
-            /*
-             * If there is no URL token,
-             * check the browser's saved token.
-             */
-
-            if(!token){
-
-                token =
-                    localStorage.getItem(
-                        ACCESS_TOKEN_KEY
-                    );
-
-            }
-
-
-            /*
-             * No token = no access
-             */
-
-            if(!token){
-
-                setAccessScreen(
-                    "Access Required",
-                    "Please complete your purchase to access Daily Habit Tracker.",
-                    false
-                );
-
-                return;
-
-            }
-
-
-            /*
-             * Verify token with Cloudflare Worker.
-             */
-
-            const response =
-                await fetch(
-                    ACCESS_API +
-                    "/verify?token=" +
-                    encodeURIComponent(token),
-                    {
-                        method:"GET",
-                        cache:"no-store"
-                    }
-                );
-
-
-            if(!response.ok){
-
-                throw new Error(
-                    "Verification request failed"
-                );
-
-            }
-
-
-            const result =
-                await response.json();
-
-
-            /*
-             * Valid paid access
-             */
-
-            if(result.valid === true){
-
-                /*
-                 * Save token for future visits.
-                 */
-
-                localStorage.setItem(
-                    ACCESS_TOKEN_KEY,
-                    token
-                );
-
-
-                /*
-                 * Remove the token from the
-                 * visible browser URL.
-                 */
-
-                if(
-                    window.history &&
-                    window.history.replaceState
-                ){
-
-                    const cleanUrl =
-                        window.location.origin +
-                        window.location.pathname;
-
-                    window.history.replaceState(
-                        {},
-                        document.title,
-                        cleanUrl
-                    );
-
-                }
-
-
-                /*
-                 * Hide access screen.
-                 */
-
-                gate.style.display = "none";
-
-                /*
-                 * Show the actual app.
-                 */
-
-                app.style.display = "block";
-
-
-                /*
-                 * Start the app only after
-                 * successful verification.
-                 */
-
-                render();
-
-
-                /*
-                 * Register Service Worker only
-                 * after valid access.
-                 */
-
-                if("serviceWorker" in navigator){
-
-                    navigator.serviceWorker
-                        .register("./sw.js")
-                        .catch(console.error);
-
-                }
-
-                return;
-
-            }
-
-
-            /*
-             * Invalid token
-             */
-
-            setAccessScreen(
-                "Access Not Available",
-                "This access token is not valid. Please complete your purchase to continue.",
-                false
-            );
-
-        }catch(error){
-
-            console.error(
-                "Access verification error:",
-                error
-            );
-
-            setAccessScreen(
-                "Unable to Verify Access",
-                "Please check your internet connection and try again.",
-                true
-            );
-
-        }
-
-    }
-
-
-    /* =========================================================
-       MAIN APP
-       ========================================================= */
-
-    const STORAGE_KEY =
-        "daily_habit_tracker_professional_v9";
-
-
-    const YEAR_STORAGE_KEY =
-        "daily_habit_tracker_years_v1";
-
-
-    const DEFAULT_HABITS=[
-
-        "🚀 LEARN DROPSHIPPING",
-
-        "💪 EXERCISE",
-
-        "📖 STUDY 20 MINUTES",
-
-        "📚 READ 10 PAGES",
-
-        "🧘 MEDITATE",
-
-        "📝 STUDY SEERAH",
-
-        "😴 SLEEP 7–8 HOURS",
-
-        "📖 LEARN QURAN",
-
-        "💼 BUSINESS WORK",
-
-        "🎯 PERSONAL GOAL"
-
-    ];
-
-
-    let state=loadState(),
-
-        editingHabitId=null,
-
-        pendingAction=null,
-
-        activeMenuHabitId=null;
-
-
-    /* =========================================================
-       YEAR SYSTEM
-       ========================================================= */
-
-    function loadExtraYears(){
-
-        try{
-
-            const saved =
-                localStorage.getItem(
-                    YEAR_STORAGE_KEY
-                );
-
-            if(saved){
-
-                const years =
-                    JSON.parse(saved);
-
-                if(Array.isArray(years)){
-
-                    return years
-                        .map(Number)
-                        .filter(
-                            year =>
-                            Number.isInteger(year) &&
-                            year > 2040
-                        );
-
-                }
-
-            }
-
-        }catch(error){
-
-            console.log(
-                "Year load error:",
-                error
-            );
-
-        }
-
-        return [];
-
-    }
-
-
-    function saveExtraYears(years){
-
-        try{
-
-            localStorage.setItem(
-                YEAR_STORAGE_KEY,
-                JSON.stringify(
-                    [...new Set(years)]
-                        .sort((a,b)=>a-b)
-                )
-            );
-
-        }catch(error){
-
-            console.log(
-                "Year save error:",
-                error
-            );
-
-        }
-
-    }
-
-
-    function getAvailableYears(){
-
-        const baseYears=[];
-
-        for(
-            let year=2020;
-            year<=2040;
-            year++
-        ){
-
-            baseYears.push(year);
-
-        }
-
-        const extraYears =
-            loadExtraYears();
-
-        return [
-            ...new Set(
-                [
-                    ...baseYears,
-                    ...extraYears
-                ]
-            )
-        ].sort(
-            (a,b)=>a-b
-        );
-
-    }
-
-
-    /* =========================================================
-       ADD YEAR
-       ========================================================= */
-
-    function addNewYear(){
-
-        const years =
-            getAvailableYears();
-
-        const highestYear =
-            Math.max(...years);
-
-        const newYear =
-            highestYear+1;
-
-        const extraYears =
-            loadExtraYears();
-
-        extraYears.push(newYear);
-
-        saveExtraYears(extraYears);
-
-        state.selectedYear =
-            newYear;
-
-        saveState();
-
-        render();
-
-    }
-
-
-    /* =========================================================
-       STATE
-       ========================================================= */
-
-    function createDefaultState(){
-
-        return{
-
-            selectedYear:
-                new Date().getFullYear(),
-
-            selectedMonth:
-                new Date().getMonth(),
-
-            habits:
-                DEFAULT_HABITS.map(
-                    (name,index)=>({
-
-                        id:
-                            "habit_" +
-                            Date.now() +
-                            "_" +
-                            index,
-
-                        name:name,
-
-                        data:{}
-
-                    })
-                )
-
-        };
-
-    }
-
-
-    function loadState(){
-
-        try{
-
-            const saved =
-                localStorage.getItem(
-                    STORAGE_KEY
-                );
-
-            if(saved){
-
-                const parsed =
-                    JSON.parse(saved);
-
-                if(
-                    parsed &&
-                    Array.isArray(parsed.habits)
-                ){
-
-                    return parsed;
-
-                }
-
-            }
-
-        }catch(error){
-
-            console.log(
-                "Load error:",
-                error
-            );
-
-        }
-
-
-        const fresh =
-            createDefaultState();
-
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(fresh)
-        );
-
-
-        return fresh;
-
-    }
-
-
-    function saveState(){
-
-        try{
-
-            localStorage.setItem(
-                STORAGE_KEY,
-                JSON.stringify(state)
-            );
-
-        }catch(error){
-
-            console.log(
-                "Save error:",
-                error
-            );
-
-        }
-
-    }
-
-
-    /* =========================================================
-       YEAR SELECT
-       ========================================================= */
-
-    function setupYears(){
-
-        const select =
-            document.getElementById(
-                "yearSelect"
-            );
-
-        select.innerHTML="";
-
-        const years =
-            getAvailableYears();
-
-
-        years.forEach(
-            function(year){
-
-                const option =
-                    document.createElement(
-                        "option"
-                    );
-
-                option.value=year;
-
-                option.textContent=year;
-
-
-                if(
-                    year===state.selectedYear
-                ){
-
-                    option.selected=true;
-
-                }
-
-
-                select.appendChild(
-                    option
-                );
-
-            }
-        );
-
-
-        const addOption =
-            document.createElement(
-                "option"
-            );
-
-        addOption.value="ADD_YEAR";
-
-        addOption.textContent="＋ Add Year";
-
-        select.appendChild(
-            addOption
-        );
-
-    }
-
-
-    /* =========================================================
-       YEAR CHANGE
-       ========================================================= */
-
-    function changeYear(){
-
-        const select =
-            document.getElementById(
-                "yearSelect"
-            );
-
-
-        if(
-            select.value==="ADD_YEAR"
-        ){
-
-            addNewYear();
-
-            return;
-
-        }
-
-
-        state.selectedYear =
-            Number(select.value);
-
-        saveState();
-
-        render();
-
-    }
-
-
-    /* =========================================================
-       MONTH
-       ========================================================= */
-
-    function setupMonth(){
-
-        document.getElementById(
-            "monthSelect"
-        ).value =
-            state.selectedMonth;
-
-    }
-
-
-    function getDaysInMonth(
-        year,
-        month
-    ){
-
-        return new Date(
-            year,
-            month+1,
-            0
-        ).getDate();
-
-    }
-
-
-    function getDateKey(
-        year,
-        month,
-        day
-    ){
-
-        return year +
-            "-" +
-            String(month+1)
-                .padStart(2,"0") +
-            "-" +
-            String(day)
-                .padStart(2,"0");
-
-    }
-
-
-    function changeMonth(){
-
-        state.selectedMonth =
-            Number(
-                document.getElementById(
-                    "monthSelect"
-                ).value
-            );
-
-        saveState();
-
-        render();
-
-    }
-
-
-    /* =========================================================
-       RENDER
-       ========================================================= */
-
-    function render(){
-
-        closeAllMenus();
-
-        setupYears();
-
-        setupMonth();
-
-        renderHeader();
-
-        renderHabits();
-
-        updateMonthlyProgress();
-
-        updateDataBar();
-
-        updateDailySummary();
-
-    }
-
-
-    function renderHeader(){
-
-        const head =
-            document.getElementById(
-                "tableHead"
-            );
-
-        head.innerHTML =
-            "<th>HABIT</th>";
-
-
-        const days =
-            getDaysInMonth(
-                state.selectedYear,
-                state.selectedMonth
-            );
-
-
-        for(
-            let day=1;
-            day<=days;
-            day++
-        ){
-
-            const th =
-                document.createElement(
-                    "th"
-                );
-
-            th.textContent=day;
-
-            head.appendChild(th);
-
-        }
-
-
-        const progressHead =
-            document.createElement(
-                "th"
-            );
-
-        progressHead.textContent="%";
-
-        head.appendChild(
-            progressHead
-        );
-
-
-        document.getElementById(
-            "monthInfo"
-        ).text
+</div>  <script>  
+  
+    const STORAGE_KEY="daily_habit_tracker_professional_v9";  
+  
+    /* NEW:  
+       Stores years added by the user.  
+       2020–2040 remain available by default.  
+    */  
+    const YEAR_STORAGE_KEY="daily_habit_tracker_years_v1";  
+  
+    const DEFAULT_HABITS=[  
+    "🚀 LEARN DROPSHIPPING",  
+    "💪 EXERCISE",  
+    "📖 STUDY 20 MINUTES",  
+    "📚 READ 10 PAGES",  
+    "🧘 MEDITATE",  
+    "📝 STUDY SEERAH",  
+    "😴 SLEEP 7–8 HOURS",  
+    "📖 LEARN QURAN",  
+    "💼 BUSINESS WORK",  
+    "🎯 PERSONAL GOAL"  
+    ];  
+  
+    let state=loadState(),  
+    editingHabitId=null,  
+    pendingAction=null,  
+    activeMenuHabitId=null;  
+  
+  
+    /* =========================================================  
+       YEAR SYSTEM  
+       2020–2040 are always available.  
+       Additional years can be added with + Add Year.  
+       ========================================================= */  
+  
+    function loadExtraYears(){  
+  
+    try{  
+  
+    const saved=localStorage.getItem(YEAR_STORAGE_KEY);  
+  
+    if(saved){  
+  
+    const years=JSON.parse(saved);  
+  
+    if(Array.isArray(years)){  
+  
+    return years  
+    .map(Number)  
+    .filter(year=>Number.isInteger(year)&&year>2040);  
+  
+    }  
+  
+    }  
+  
+    }catch(error){  
+  
+    console.log("Year load error:",error);  
+  
+    }  
+  
+    return [];  
+  
+    }  
+  
+  
+    function saveExtraYears(years){  
+  
+    try{  
+  
+    localStorage.setItem(  
+    YEAR_STORAGE_KEY,  
+    JSON.stringify(  
+    [...new Set(years)]  
+    .sort((a,b)=>a-b)  
+    )  
+    );  
+  
+    }catch(error){  
+  
+    console.log("Year save error:",error);  
+  
+    }  
+  
+    }  
+  
+  
+    function getAvailableYears(){  
+  
+    const baseYears=[];  
+  
+    for(let year=2020;year<=2040;year++){  
+  
+    baseYears.push(year);  
+  
+    }  
+  
+    const extraYears=loadExtraYears();  
+  
+    return [...new Set([...baseYears,...extraYears])].sort((a,b)=>a-b);  
+  
+    }  
+  
+  
+    /* =========================================================  
+       ADD YEAR  
+       ========================================================= */  
+  
+    function addNewYear(){  
+  
+    const years=getAvailableYears();  
+  
+    const highestYear=Math.max(...years);  
+  
+    const newYear=highestYear+1;  
+  
+    const extraYears=loadExtraYears();  
+  
+    extraYears.push(newYear);  
+  
+    saveExtraYears(extraYears);  
+  
+    /* Select the newly added year */  
+  
+    state.selectedYear=newYear;  
+  
+    saveState();  
+  
+    render();  
+  
+    }  
+  
+  
+    /* =========================================================  
+       STATE  
+       ========================================================= */  
+  
+    function createDefaultState(){  
+  
+    return{  
+  
+    selectedYear:new Date().getFullYear(),  
+  
+    selectedMonth:new Date().getMonth(),  
+  
+    habits:DEFAULT_HABITS.map((name,index)=>({  
+  
+    id:"habit_"+Date.now()+"_"+index,  
+  
+    name:name,  
+  
+    data:{}  
+  
+    }))  
+  
+    };  
+  
+    }  
+  
+  
+    function loadState(){  
+  
+    try{  
+  
+    const saved=localStorage.getItem(STORAGE_KEY);  
+  
+    if(saved){  
+  
+    const parsed=JSON.parse(saved);  
+  
+    if(parsed&&Array.isArray(parsed.habits)){  
+  
+    return parsed;  
+  
+    }  
+  
+    }  
+  
+    }catch(error){  
+  
+    console.log("Load error:",error);  
+  
+    }  
+  
+    const fresh=createDefaultState();  
+  
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(fresh));  
+  
+    return fresh;  
+  
+    }  
+  
+  
+    function saveState(){  
+  
+    try{  
+  
+    localStorage.setItem(  
+    STORAGE_KEY,  
+    JSON.stringify(state)  
+    );  
+  
+    }catch(error){  
+  
+    console.log("Save error:",error);  
+  
+    }  
+  
+    }  
+  
+  
+    /* =========================================================  
+       YEAR SELECT  
+       ========================================================= */  
+  
+    function setupYears(){  
+  
+    const select=document.getElementById("yearSelect");  
+  
+    select.innerHTML="";  
+  
+    const years=getAvailableYears();  
+  
+    years.forEach(function(year){  
+  
+    const option=document.createElement("option");  
+  
+    option.value=year;  
+  
+    option.textContent=year;  
+  
+    if(year===state.selectedYear){  
+  
+    option.selected=true;  
+  
+    }  
+  
+    select.appendChild(option);  
+  
+    });  
+  
+  
+    /* Add Year option */  
+  
+    const addOption=document.createElement("option");  
+  
+    addOption.value="ADD_YEAR";  
+  
+    addOption.textContent="＋ Add Year";  
+  
+    select.appendChild(addOption);  
+  
+    }  
+  
+  
+    /* =========================================================  
+       YEAR CHANGE  
+       ========================================================= */  
+  
+    function changeYear(){  
+  
+    const select=document.getElementById("yearSelect");  
+  
+    if(select.value==="ADD_YEAR"){  
+  
+    addNewYear();  
+  
+    return;  
+  
+    }  
+  
+    state.selectedYear=Number(select.value);  
+  
+    saveState();  
+  
+    render();  
+  
+    }  
+  
+  
+    /* =========================================================  
+       MONTH  
+       ========================================================= */  
+  
+    function setupMonth(){  
+  
+    document.getElementById("monthSelect").value=state.selectedMonth;  
+  
+    }  
+  
+  
+    function getDaysInMonth(year,month){  
+  
+    return new Date(year,month+1,0).getDate();  
+  
+    }  
+  
+  
+    function getDateKey(year,month,day){  
+  
+    return year+"-"+String(month+1).padStart(2,"0")+"-"+String(day).padStart(2,"0");  
+  
+    }  
+  
+  
+    function changeMonth(){  
+  
+    state.selectedMonth=Number(  
+    document.getElementById("monthSelect").value  
+    );  
+  
+    saveState();  
+  
+    render();  
+  
+    }  
+  
+  
+    /* =========================================================  
+       RENDER  
+       ========================================================= */  
+  
+    function render(){  
+  
+    closeAllMenus();  
+  
+    setupYears();  
+  
+    setupMonth();  
+  
+    renderHeader();  
+  
+    renderHabits();  
+  
+    updateMonthlyProgress();  
+  
+    updateDataBar();  
+  
+    updateDailySummary();  
+  
+    }  
+  
+  
+    function renderHeader(){  
+  
+    const head=document.getElementById("tableHead");  
+  
+    head.innerHTML="<th>HABIT</th>";  
+  
+    const days=getDaysInMonth(  
+    state.selectedYear,  
+    state.selectedMonth  
+    );  
+  
+    for(let day=1;day<=days;day++){  
+  
+    const th=document.createElement("th");  
+  
+    th.textContent=day;  
+  
+    head.appendChild(th);  
+  
+    }  
+  
+    const progressHead=document.createElement("th");  
+  
+    progressHead.textContent="%";  
+  
+    head.appendChild(progressHead);  
+  
+    document.getElementById("monthInfo").textContent=days+" days";  
+  
+    }  
+  
+  
+    /* =========================================================  
+       HABITS  
+       ========================================================= */  
+  
+    function renderHabits(){  
+  
+    const body=document.getElementById("habitBody");  
+  
+    body.innerHTML="";  
+  
+    const days=getDaysInMonth(  
+    state.selectedYear,  
+    state.selectedMonth  
+    );  
+  
+    if(state.habits.length===0){  
+  
+    body.innerHTML=  
+    `<tr>  
+    <td colspan="${days+2}">  
+    <div class="empty">  
+    No habits yet.<br>  
+    Tap ＋ Add to create your first habit.  
+    </div>  
+    </td>  
+    </tr>`;  
+  
+    return;  
+  
+    }  
+  
+  
+    state.habits.forEach(function(habit,index){  
+  
+    const row=document.createElement("tr");  
+  
+    const nameCell=document.createElement("td");  
+  
+    const nameWrap=document.createElement("div");  
+  
+    nameWrap.className="habit-name-wrap";  
+  
+    const number=document.createElement("div");  
+  
+    number.className="habit-number";  
+  
+    number.textContent=index+1;  
+  
+    const name=document.createElement("div");  
+  
+    name.className="habit-name";  
+  
+    name.textContent=habit.name;  
+  
+    name.title=habit.name;  
+  
+    const moreWrap=document.createElement("div");  
+  
+    moreWrap.className="more-wrap";  
+  
+    const moreButton=document.createElement("button");  
+  
+    moreButton.type="button";  
+  
+    moreButton.className="more-btn";  
+  
+    moreButton.setAttribute(  
+    "data-habit-id",  
+    habit.id  
+    );  
+  
+    moreButton.setAttribute(  
+    "aria-label",  
+    "Habit options"  
+    );  
+  
+    moreButton.textContent="⋮";  
+  
+    moreWrap.appendChild(moreButton);  
+  
+    nameWrap.append(  
+    number,  
+    name,  
+    moreWrap  
+    );  
+  
+    nameCell.appendChild(nameWrap);  
+  
+    row.appendChild(nameCell);  
+  
+    let completed=0;  
+  
+    for(let day=1;day<=days;day++){  
+  
+    const cell=document.createElement("td");  
+  
+    const key=getDateKey(  
+    state.selectedYear,  
+    state.selectedMonth,  
+    day  
+    );  
+  
+    const done=  
+    habit.data&&  
+    habit.data[key]===true;  
+  
+    if(done)completed++;  
+  
+    const button=document.createElement("button");  
+  
+    button.type="button";  
+  
+    button.className=  
+    "day-btn"+(done?" done":"");  
+  
+    button.textContent=  
+    done?"✓":"";  
+  
+    button.onclick=function(){  
+  
+    toggleDay(  
+    habit.id,  
+    key  
+    );  
+  
+    };  
+  
+    cell.appendChild(button);  
+  
+    row.appendChild(cell);  
+  
+    }  
+  
+    const progress=  
+    days>0  
+    ?Math.round(completed/days*100)  
+    :0;  
+  
+    const progressCell=document.createElement("td");  
+  
+    const progressText=document.createElement("span");  
+  
+    progressText.className="habit-progress";  
+  
+    progressText.textContent=  
+    progress+"%";  
+  
+    progressCell.appendChild(progressText);  
+  
+    row.appendChild(progressCell);  
+  
+    body.appendChild(row);  
+  
+    });  
+  
+    }  
+  
+  
+    /* =========================================================  
+       DAY TOGGLE  
+       ========================================================= */  
+  
+    function toggleDay(habitId,dateKey){  
+  
+    const habit=  
+    state.habits.find(  
+    h=>h.id===habitId  
+    );  
+  
+    if(!habit)return;  
+  
+    if(  
+    habit.data&&  
+    habit.data[dateKey]===true  
+    ){  
+  
+    delete habit.data[dateKey];  
+  
+    }else{  
+  
+    if(!habit.data)  
+    habit.data={};  
+  
+    habit.data[dateKey]=true;  
+  
+    }  
+  
+    saveState();  
+  
+    render();  
+  
+    }  
+  
+  
+    /* =========================================================  
+       HABIT MENU  
+       ========================================================= */  
+  
+    function openHabitMenu(habitId,button){  
+  
+    const menu=  
+    document.getElementById("habitMenu");  
+  
+    if(!menu)return;  
+  
+    closeAllMenus();  
+  
+    activeMenuHabitId=habitId;  
+  
+    menu.classList.add("show");  
+  
+    menu.style.visibility="hidden";  
+  
+    const rect=  
+    button.getBoundingClientRect();  
+  
+    const menuWidth=135;  
+  
+    const menuHeight=  
+    menu.offsetHeight;  
+  
+    let left=  
+    rect.right-menuWidth;  
+  
+    let top=  
+    rect.bottom+5;  
+  
+    if(left<5)  
+    left=5;  
+  
+    if(  
+    left+menuWidth>  
+    window.innerWidth-5  
+    )  
+    left=  
+    window.innerWidth-menuWidth-5;  
+  
+    if(  
+    top+menuHeight>  
+    window.innerHeight-5  
+    )  
+    top=  
+    rect.top-menuHeight-5;  
+  
+    if(top<5)  
+    top=5;  
+  
+    menu.style.left=  
+    left+"px";  
+  
+    menu.style.top=  
+    top+"px";  
+  
+    menu.style.visibility="visible";  
+  
+    }  
+  
+  
+    document.addEventListener(  
+    "click",  
+    function(event){  
+  
+    const moreButton=  
+    event.target.closest(".more-btn");  
+  
+    if(moreButton){  
+  
+    event.preventDefault();  
+  
+    event.stopPropagation();  
+  
+    const habitId=  
+    moreButton.getAttribute(  
+    "data-habit-id"  
+    );  
+  
+    if(habitId)  
+    openHabitMenu(  
+    habitId,  
+    moreButton  
+    );  
+  
+    return;  
+  
+    }  
+  
+    const menuButton=  
+    event.target.closest(  
+    "#habitMenu button"  
+    );  
+  
+    if(menuButton){  
+  
+    event.preventDefault();  
+  
+    event.stopPropagation();  
+  
+    const habitId=  
+    activeMenuHabitId;  
+  
+    const action=  
+    menuButton.getAttribute(  
+    "data-action"  
+    );  
+  
+    closeAllMenus();  
+  
+    if(!habitId)return;  
+  
+    if(action==="up")  
+    moveHabitUp(habitId);  
+  
+    else if(action==="down")  
+    moveHabitDown(habitId);  
+  
+    else if(action==="edit")  
+    openEditHabit(habitId);  
+  
+    else if(action==="delete")  
+    askDeleteHabit(habitId);  
+  
+    return;  
+  
+    }  
+  
+    closeAllMenus();  
+  
+    },  
+    false  
+    );  
+  
+  
+    function closeAllMenus(){  
+  
+    const menu=  
+    document.getElementById("habitMenu");  
+  
+    if(menu){  
+  
+    menu.classList.remove("show");  
+  
+    menu.style.left="";  
+  
+    menu.style.top="";  
+  
+    menu.style.visibility="";  
+  
+    }  
+  
+    activeMenuHabitId=null;  
+  
+    }  
+  
+  
+    function moveHabitUp(id){  
+  
+    const index=  
+    state.habits.findIndex(  
+    h=>h.id===id  
+    );  
+  
+    if(index<=0)return;  
+  
+    [  
+    state.habits[index-1],  
+    state.habits[index]  
+    ]=[  
+    state.habits[index],  
+    state.habits[index-1]  
+    ];  
+  
+    saveState();  
+  
+    render();  
+  
+    }  
+  
+  
+    function moveHabitDown(id){  
+  
+    const index=  
+    state.habits.findIndex(  
+    h=>h.id===id  
+    );  
+  
+    if(  
+    index===-1||  
+    index>=state.habits.length-1  
+    )  
+    return;  
+  
+    [  
+    state.habits[index+1],  
+    state.habits[index]  
+    ]=[  
+    state.habits[index],  
+    state.habits[index+1]  
+    ];  
+  
+    saveState();  
+  
+    render();  
+  
+    }  
+  
+  
+    /* =========================================================  
+       ADD / EDIT HABIT  
+       ========================================================= */  
+  
+    function openAddHabit(){  
+  
+    closeAllMenus();  
+  
+    editingHabitId=null;  
+  
+    document.getElementById(  
+    "modalTitle"  
+    ).textContent="Add Habit";  
+  
+    document.getElementById(  
+    "modalDescription"  
+    ).textContent=  
+    "Enter your new habit name.";  
+  
+    const input=  
+    document.getElementById(  
+    "habitInput"  
+    );  
+  
+    input.value="";  
+  
+    document.getElementById(  
+    "habitModal"  
+    ).classList.add("show");  
+  
+    setTimeout(  
+    ()=>input.focus(),  
+    100  
+    );  
+  
+    }  
+  
+  
+    function openEditHabit(id){  
+  
+    const habit=  
+    state.habits.find(  
+    h=>h.id===id  
+    );  
+  
+    if(!habit)return;  
+  
+    editingHabitId=id;  
+  
+    document.getElementById(  
+    "modalTitle"  
+    ).textContent="Edit Habit";  
+  
+    document.getElementById(  
+    "modalDescription"  
+    ).textContent=  
+    "Change the habit name. Your tracking data will stay safe.";  
+  
+    const input=  
+    document.getElementById(  
+    "habitInput"  
+    );  
+  
+    input.value=habit.name;  
+  
+    document.getElementById(  
+    "habitModal"  
+    ).classList.add("show");  
+  
+    setTimeout(  
+    ()=>{  
+    input.focus();  
+    input.select();  
+    },  
+    100  
+    );  
+  
+    }  
+  
+  
+    function saveHabit(){  
+  
+    const input=  
+    document.getElementById(  
+    "habitInput"  
+    );  
+  
+    const name=  
+    input.value.trim();  
+  
+    if(!name){  
+  
+    input.focus();  
+  
+    return;  
+  
+    }  
+  
+    if(editingHabitId){  
+  
+    const habit=  
+    state.habits.find(  
+    h=>h.id===editingHabitId  
+    );  
+  
+    if(habit)  
+    habit.name=name;  
+  
+    }else{  
+  
+    if(state.habits.length>=30){  
+  
+    alert(  
+    "You can add up to 30 habits."  
+    );  
+  
+    return;  
+  
+    }  
+  
+    state.habits.push({  
+  
+    id:  
+    "habit_"+  
+    Date.now()+  
+    "_"+Math.random()  
+    .toString(36)  
+    .substring(2,8),  
+  
+    name:name,  
+  
+    data:{}  
+  
+    });  
+  
+    }  
+  
+    saveState();  
+  
+    closeModal();  
+  
+    render();  
+  
+    }  
+  
+  
+    /* =========================================================  
+       DELETE  
+       ========================================================= */  
+  
+    function askDeleteHabit(id){  
+  
+    const habit=  
+    state.habits.find(  
+    h=>h.id===id  
+    );  
+  
+    if(!habit)return;  
+  
+    pendingAction=()=>{  
+  
+    state.habits=  
+    state.habits.filter(  
+    h=>h.id!==id  
+    );  
+  
+    saveState();  
+  
+    render();  
+  
+    };  
+  
+    document.getElementById(  
+    "confirmTitle"  
+    ).textContent=  
+    "Delete Habit?";  
+  
+    document.getElementById(  
+    "confirmMessage"  
+    ).textContent=  
+    '"'+  
+    habit.name+  
+    '" will be deleted along with its tracking data.';  
+  
+    document.getElementById(  
+    "confirmButton"  
+    ).textContent="Delete";  
+  
+    document.getElementById(  
+    "confirmModal"  
+    ).classList.add("show");  
+  
+    }  
+  
+  
+    /* =========================================================  
+       RESET  
+       ========================================================= */  
+  
+    function askResetMonth(){  
+  
+    closeAllMenus();  
+  
+    pendingAction=()=>{  
+  
+    const year=  
+    state.selectedYear;  
+  
+    const month=  
+    state.selectedMonth;  
+  
+    state.habits.forEach(  
+    habit=>{  
+  
+    const days=  
+    getDaysInMonth(  
+    year,  
+    month  
+    );  
+  
+    for(  
+    let day=1;  
+    day<=days;  
+    day++  
+    ){  
+  
+    delete habit.data?.[  
+    getDateKey(  
+    year,  
+    month,  
+    day  
+    )  
+    ];  
+  
+    }  
+  
+    }  
+    );  
+  
+    saveState();  
+  
+    render();  
+  
+    };  
+  
+    document.getElementById(  
+    "confirmTitle"  
+    ).textContent=  
+    "Reset This Month?";  
+  
+    document.getElementById(  
+    "confirmMessage"  
+    ).textContent=  
+    "All Done marks for the selected month will be cleared.";  
+  
+    document.getElementById(  
+    "confirmButton"  
+    ).textContent="Reset";  
+  
+    document.getElementById(  
+    "confirmModal"  
+    ).classList.add("show");  
+  
+    }  
+  
+  
+    function askResetAll(){  
+  
+    closeAllMenus();  
+  
+    pendingAction=()=>{  
+  
+    state=createDefaultState();  
+  
+    saveState();  
+  
+    render();  
+  
+    };  
+  
+    document.getElementById(  
+    "confirmTitle"  
+    ).textContent=  
+    "Reset Everything?";  
+  
+    document.getElementById(  
+    "confirmMessage"  
+    ).textContent=  
+    "All habits and all tracking data will be restored to the default setup.";  
+  
+    document.getElementById(  
+    "confirmButton"  
+    ).textContent=  
+    "Reset All";  
+  
+    document.getElementById(  
+    "confirmModal"  
+    ).classList.add("show");  
+  
+    }  
+  
+  
+    function confirmAction(){  
+  
+    if(  
+    typeof pendingAction==="function"  
+    ){  
+  
+    const action=  
+    pendingAction;  
+  
+    pendingAction=null;  
+  
+    closeConfirm();  
+  
+    action();  
+  
+    }  
+  
+    }  
+  
+  
+    function closeModal(){  
+  
+    document.getElementById(  
+    "habitModal"  
+    ).classList.remove("show");  
+  
+    editingHabitId=null;  
+  
+    }  
+  
+  
+    function closeConfirm(){  
+  
+    document.getElementById(  
+    "confirmModal"  
+    ).classList.remove("show");  
+  
+    pendingAction=null;  
+  
+    }  
+  
+  
+    document.getElementById(  
+    "habitModal"  
+    ).addEventListener(  
+    "click",  
+    function(event){  
+  
+    if(event.target===this)  
+    closeModal();  
+  
+    }  
+    );  
+  
+  
+    document.getElementById(  
+    "confirmModal"  
+    ).addEventListener(  
+    "click",  
+    function(event){  
+  
+    if(event.target===this)  
+    closeConfirm();  
+  
+    }  
+    );  
+  
+  
+    document.getElementById(  
+    "habitInput"  
+    ).addEventListener(  
+    "keydown",  
+    function(event){  
+  
+    if(event.key==="Enter")  
+    saveHabit();  
+  
+    if(event.key==="Escape")  
+    closeModal();  
+  
+    }  
+    );  
+  
+  
+    /* =========================================================  
+       MONTHLY PROGRESS  
+       ========================================================= */  
+  
+    function updateMonthlyProgress(){  
+  
+    const days=  
+    getDaysInMonth(  
+    state.selectedYear,  
+    state.selectedMonth  
+    );  
+  
+    const totalPercent=  
+    document.getElementById(  
+    "totalPercent"  
+    );  
+  
+    const totalFill=  
+    document.getElementById(  
+    "totalFill"  
+    );  
+  
+    if(state.habits.length===0){  
+  
+    totalPercent.textContent="0%";  
+  
+    totalFill.style.width="0%";  
+  
+    return;  
+  
+    }  
+  
+    let totalCompleted=0;  
+  
+    const totalPossible=  
+    state.habits.length*days;  
+  
+    state.habits.forEach(  
+    habit=>{  
+  
+    for(  
+    let day=1;  
+    day<=days;  
+    day++  
+    ){  
+  
+    if(  
+    habit.data&&  
+    habit.data[  
+    getDateKey(  
+    state.selectedYear,  
+    state.selectedMonth,  
+    day  
+    )  
+    ]===true  
+    ){  
+  
+    totalCompleted++;  
+  
+    }  
+  
+    }  
+  
+    }  
+    );  
+  
+    const percent=  
+    totalPossible>0  
+    ?Math.round(  
+    totalCompleted/  
+    totalPossible*  
+    100  
+    )  
+    :0;  
+  
+    totalPercent.textContent=  
+    percent+"%";  
+  
+    totalFill.style.width=  
+    percent+"%";  
+  
+    }  
+  
+  
+    /* =========================================================  
+       DATA BAR  
+       ========================================================= */  
+  
+    function updateDataBar(){  
+  
+    const days=  
+    getDaysInMonth(  
+    state.selectedYear,  
+    state.selectedMonth  
+    );  
+  
+    let totalDone=0;  
+  
+    const activeDates={};  
+  
+    state.habits.forEach(  
+    habit=>{  
+  
+    for(  
+    let day=1;  
+    day<=days;  
+    day++  
+    ){  
+  
+    const key=  
+    getDateKey(  
+    state.selectedYear,  
+    state.selectedMonth,  
+    day  
+    );  
+  
+    if(  
+    habit.data&&  
+    habit.data[key]===true  
+    ){  
+  
+    totalDone++;  
+  
+    activeDates[key]=true;  
+  
+    }  
+  
+    }  
+  
+    }  
+    );  
+  
+    document.getElementById(  
+    "statHabits"  
+    ).textContent=  
+    state.habits.length;  
+  
+    document.getElementById(  
+    "statDone"  
+    ).textContent=  
+    totalDone;  
+  
+    document.getElementById(  
+    "statActive"  
+    ).textContent=  
+    Object.keys(activeDates).length;  
+  
+    }  
+  
+  
+    /* =========================================================  
+       DAILY SUMMARY  
+       ========================================================= */  
+  
+    function updateDailySummary(){  
+  
+    const days=  
+    getDaysInMonth(  
+    state.selectedYear,  
+    state.selectedMonth  
+    );  
+  
+    let totalDone=0;  
+  
+    const activeDates={};  
+  
+    let bestHabit=null;  
+  
+    let bestCompleted=-1;  
+  
+    state.habits.forEach(  
+    habit=>{  
+  
+    let completed=0;  
+  
+    for(  
+    let day=1;  
+    day<=days;  
+    day++  
+    ){  
+  
+    const key=  
+    getDateKey(  
+    state.selectedYear,  
+    state.selectedMonth,  
+    day  
+    );  
+  
+    if(  
+    habit.data&&  
+    habit.data[key]===true  
+    ){  
+  
+    completed++;  
+  
+    totalDone++;  
+  
+    activeDates[key]=true;  
+  
+    }  
+  
+    }  
+  
+    if(completed>bestCompleted){  
+  
+    bestCompleted=completed;  
+  
+    bestHabit=habit;  
+  
+    }  
+  
+    }  
+    );  
+  
+    const totalPossible=  
+    state.habits.length*days;  
+  
+    const percent=  
+    totalPossible>0  
+    ?Math.round(  
+    totalDone/  
+    totalPossible*  
+    100  
+    )  
+    :0;  
+  
+    const activeDays=  
+    Object.keys(activeDates).length;  
+  
+    const monthNames=[  
+    "January",  
+    "February",  
+    "March",  
+    "April",  
+    "May",  
+    "June",  
+    "July",  
+    "August",  
+    "September",  
+    "October",  
+    "November",  
+    "December"  
+    ];  
+  
+    document.getElementById(  
+    "summaryMonth"  
+    ).textContent=  
+    monthNames[  
+    state.selectedMonth  
+    ]+  
+    " "+  
+    state.selectedYear;  
+  
+    document.getElementById(  
+    "summaryPercent"  
+    ).textContent=  
+    percent+"%";  
+  
+    document.getElementById(  
+    "summaryDone"  
+    ).textContent=  
+    totalDone;  
+  
+    document.getElementById(  
+    "summaryActive"  
+    ).textContent=  
+    activeDays;  
+  
+    const bestName=  
+    document.getElementById(  
+    "bestHabitName"  
+    );  
+  
+    const bestProgress=  
+    document.getElementById(  
+    "bestHabitProgress"  
+    );  
+  
+    if(  
+    bestHabit&&  
+    bestCompleted>0  
+    ){  
+  
+    const bestPercent=  
+    days>0  
+    ?Math.round(  
+    bestCompleted/  
+    days*  
+    100  
+    )  
+    :0;  
+  
+    bestName.textContent=  
+    bestHabit.name;  
+  
+    bestProgress.textContent=  
+    bestPercent+  
+    "% complete • "+  
+    bestCompleted+  
+    "/"+  
+    days+  
+    " days";  
+  
+    }else{  
+  
+    bestName.textContent=  
+    "No progress yet";  
+  
+    bestProgress.textContent=  
+    "Start tracking today";  
+  
+    }  
+  
+    let message=  
+    "Start small. Stay consistent.";  
+  
+    if(percent===0)  
+    message=  
+    "Your journey starts with one small step.";  
+  
+    else if(percent<25)  
+    message=  
+    "Keep going. Every completed mark counts.";  
+  
+    else if(percent<50)  
+    message=  
+    "Good start. Build the habit, not the pressure.";  
+  
+    else if(percent<75)  
+    message=  
+    "You're building real consistency. Keep going.";  
+  
+    else if(percent<100)  
+    message=  
+    "Excellent progress. Finish the month strong.";  
+  
+    else  
+    message=  
+    "Amazing! You completed every planned mark.";  
+  
+    document.getElementById(  
+    "motivationText"  
+    ).textContent=  
+    message;  
+  
+    document.getElementById(  
+    "summaryProgressFill"  
+    ).style.width=  
+    percent+"%";  
+  
+    }  
+  
+  
+    /* =========================================================  
+       EVENTS  
+       ========================================================= */  
+  
+    document.getElementById(  
+    "tableWrap"  
+    ).addEventListener(  
+    "scroll",  
+    ()=>closeAllMenus()  
+    );  
+  
+    window.addEventListener(  
+    "resize",  
+    ()=>closeAllMenus()  
+    );  
+  
+  
+    /* =========================================================  
+       START APP  
+       ========================================================= */  
+  
+    render();  
+  
+</script>  <script>  
+  
+    if("serviceWorker" in navigator){  
+  
+    window.addEventListener(  
+    "load",  
+    ()=>{  
+  
+    navigator.serviceWorker  
+    .register("./sw.js")  
+    .catch(console.error);  
+  
+    }  
+    );  
+  
+    }  
+  
+</script>  </body>  
+</html>
